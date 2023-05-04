@@ -1,34 +1,28 @@
-import {
-  registerDecorator,
-  ValidationOptions,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-} from 'class-validator';
-import { ProductService } from '../product.service';
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
+import { ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, registerDecorator } from "class-validator";
+import { ProductService } from "../product.service";
 
-@ValidatorConstraint({ async: true })
-@Injectable()
-export class IsProductExists implements ValidatorConstraintInterface {
-  constructor(private productService: ProductService) {}
-
-  validate(name: string | undefined) {
-    console.log(this.productService)
-    return this.productService.getOneData({query: {productName: name}}).then((product) => {
-      return product !== undefined;
-    });
-  }
-}
-
-export function ProductExists(validationOptions?: ValidationOptions) {
-  return function (object: object, propertyName: string) {
-    registerDecorator({
-      target: object.constructor,
-      propertyName: propertyName,
-      options: validationOptions,
-      constraints: [],
-      validator: IsProductExists,
-      async: true
-    });
-  };
-};
+@ValidatorConstraint({ name: 'isEmailUserAlreadyExist', async: true })
+    @Injectable()
+    export class IsEmailUserAlreadyExistConstraint
+      implements ValidatorConstraintInterface
+    {
+      constructor(protected readonly productService: ProductService) {}
+    
+      async validate(text: string) {
+        console.log(this.productService);
+        return !(await this.productService.getOneData({query: {productName: text}}).then(x => x !== undefined));
+      }
+    }
+    
+    export function IsEmailUserAlreadyExist(validationOptions?: ValidationOptions) {
+      return function (object: any, propertyName: string) {
+        registerDecorator({
+          target: object.constructor,
+          propertyName: propertyName,
+          options: validationOptions,
+          constraints: [],
+          validator: IsEmailUserAlreadyExistConstraint,
+        });
+      };
+    }
